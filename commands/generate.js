@@ -1,5 +1,6 @@
 module.exports = {
   name: 'generate',
+  short: 'Randomly generate team',
   description: 'Randomly generates a team based on a team capacity and a list of players.',
   aliases: ['team'],
   usage: '[capacity:int] [players]',

@@ -1,6 +1,7 @@
 module.exports = {
   name: 'kick',
-  description: 'Kick user',
+  short: 'Kick user',
+  description: 'Kick a specific user from the server',
   guildOnly: true,
   execute(message, args) {
     // Check for user mention

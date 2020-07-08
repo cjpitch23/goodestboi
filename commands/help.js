@@ -1,21 +1,38 @@
 const { prefix } = require('../config.json');
+const Discord = require('discord.js');
 
 module.exports = {
   name: 'help',
+  short: 'List of commands.',
   description: 'List all of my commands or info about a specific command.',
   aliases: ['commands'],
   usage: '[command name]',
   cooldown: 5,
   execute(message, args) {
-    const data = [];
+    const helpEmbed = new Discord.MessageEmbed()
+      .setColor('#e69c56')
+      .setAuthor('Goodest Boi')
+      .setTimestamp()
+
     const { commands } = message.client;
 
     if (!args.length) {
-      data.push('Here\'s a list of all my commands:');
-      data.push(commands.map(command => command.name).join(', '));
-      data.push(`\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`);
+      // Commands to be shown
+      const visibleCommands = commands.filter(c => !['reload', 'args-info', 'avatar'].includes(c.name));
+      helpEmbed.setTitle('Help - Commands')
+        .setDescription('Here are a list of commands that I am capable of carrying out.')
+        .addFields(
+          visibleCommands.map((c) => {
+            return {
+              name: `${prefix}${c.name}`,
+              value: c.short,
+              inline: true,
+            }
+          })
+        )
+        .addField('Furthermore', `\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`)
 
-      return message.author.send(data, { split: true })
+      return message.author.send(helpEmbed)
         .then(() => {
           if (message.channel.type === 'dm') return;
           message.reply('I\'ve sent you a DM with all my commands!');
@@ -32,14 +49,19 @@ module.exports = {
       return message.reply('that\'s not a valid command!');
     }
 
-    data.push(`**Name:** ${command.name}`);
+    const fieldList = [];
 
-    if (command.aliases) data.push(`**Aliases:** ${command.aliases.join(', ')}`);
-    if (command.description) data.push(`**Description:** ${command.description}`);
-    if (command.usage) data.push(`**Usage** ${prefix}${command.name} ${command.usage}`);
+    if (command.aliases) fieldList.push({ name: 'Aliases', value: command.aliases.join(', '), inline: true });
+    if (command.usage) fieldList.push({ name: 'Usage', value: `${prefix}${command.name} ${command.usage}`, inline: true });
+    fieldList.push({ name: 'Cooldown', value: `${command.cooldown || 3} second(s)` });
 
-    data.push(`**Cooldown:** ${command.cooldown || 3} second(s)`);
+    helpEmbed.setTitle(`Help - ${command.name}`)
+      .setDescription(command.description)
+      .addFields(
+        fieldList.map(f => f),
+      )
 
-    message.channel.send(data, { split: true });
+    message.channel.send(helpEmbed);
   }
 }
+
