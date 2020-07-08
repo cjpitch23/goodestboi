@@ -12,6 +12,8 @@ module.exports = {
     const helpEmbed = new Discord.MessageEmbed()
       .setColor('#e69c56')
       .setAuthor('Goodest Boi')
+      .attachFiles('/home/cjpitch23/discord_bots/goodestboi/assets/goodest_boi.png')
+      .setThumbnail('attachment://goodest_boi.png')
       .setTimestamp()
 
     const { commands } = message.client;
