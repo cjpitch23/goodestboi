@@ -1,0 +1,15 @@
+{
+  "name": "goodestboi",
+  "version": "1.0.0",
+  "description": "The goodest boi who deserves lots of love and treats",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cjpitch23",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "eslint": "^7.4.0"
+  }
+}
