@@ -9,12 +9,14 @@ module.exports = {
   args: true,
   usage: '[ps4, xbox1, pc, switch] [game name]',
   async execute(message, args) {
-    // Common System Alias
+    // Initialize Variables
     let platform = args.shift().toLowerCase();
     const game = args.join(' ');
 
+    // Default Message
     let gameMsg = 'There was an issue';
 
+    // Check platform and reset specific keywords ['ps4', 'xbox1']
     if (platform === 'ps4') {
       platform = 'playstation-4';
     } else if (platform === 'xbox1') {
@@ -32,10 +34,30 @@ module.exports = {
       },'params':{
         platform
       }
-    }).then((r)=>{
+    }).then((r) => {
+      // See if there are results
       if (r.data.result === 'No result') {
+        axios({
+            "method":"GET",
+            "url":"https://chicken-coop.p.rapidapi.com/games",
+            "headers":{
+            "content-type":"application/octet-stream",
+            "x-rapidapi-host":"chicken-coop.p.rapidapi.com",
+            "x-rapidapi-key":"8f022d9470msh9059222fa947462p17851djsn16e34af04d09",
+            "useQueryString":true
+          },"params":{
+            "title": game
+          }
+          }).then((response)=>{
+            console.log(response)
+          }).catch((error)=>{
+            console.log(error)
+          })
+        // No results game message
         gameMsg = `No results. Are you sure ${game} is the proper spelling?\nThere's also a chance that ${platform} is incorrect.`;
       } else {
+        // There are results
+        // Transform gameMsg into embed message
         gameMsg = new Discord.MessageEmbed()
         .setColor('#e69c56')
         .setAuthor('Goodest Boi')
@@ -61,7 +83,7 @@ module.exports = {
       }
     }).catch((error)=>{
       console.log(error.response);
-      return message.reply('There was an error. I\'ll let my master know. :open_mouth:');
+      return message.reply('There was an error. I\'ll let my master know. :service_dog:');
     })
     message.channel.send(gameMsg);
   }
