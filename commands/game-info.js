@@ -1,5 +1,6 @@
 const axios = require('axios');
 const Discord = require('discord.js');
+const { rapidApiKey } = require('../config.json');
 
 module.exports = {
   name: 'game-info',
@@ -29,7 +30,7 @@ module.exports = {
       'headers':{
         'content-type':'application/octet-stream',
         'x-rapidapi-host':'chicken-coop.p.rapidapi.com',
-        'x-rapidapi-key':'8f022d9470msh9059222fa947462p17851djsn16e34af04d09',
+        'x-rapidapi-key':rapidApiKey,
         'useQueryString':true
       },'params':{
         platform
@@ -43,7 +44,7 @@ module.exports = {
             "headers":{
             "content-type":"application/octet-stream",
             "x-rapidapi-host":"chicken-coop.p.rapidapi.com",
-            "x-rapidapi-key":"8f022d9470msh9059222fa947462p17851djsn16e34af04d09",
+            "x-rapidapi-key":rapidApiKey,
             "useQueryString":true
           },"params":{
             "title": game
