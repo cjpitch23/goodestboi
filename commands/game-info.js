@@ -35,10 +35,10 @@ module.exports = {
       },'params':{
         platform
       }
-    }).then((r) => {
+    }).then(async (r) => {
       // See if there are results
       if (r.data.result === 'No result') {
-        axios({
+        await axios({
             "method":"GET",
             "url":"https://chicken-coop.p.rapidapi.com/games",
             "headers":{
@@ -49,13 +49,31 @@ module.exports = {
           },"params":{
             "title": game
           }
-          }).then((response)=>{
-            console.log(response)
-          }).catch((error)=>{
-            console.log(error)
+        }).then((r) => {
+          const gameList = r.data.result;
+          gameMsgArr = [`No results were found for ${game} on ${platform}. Here are some possible matches for you try again.`]
+          gameList.map((game, i) => {
+            if (i === 0) {
+              gameMsgArr.push(`\`\`\``);
+            }
+
+            gameMsgArr.push(`
+              title: ${game.title}
+              platform: ${game.platform}
+            `);
+
+            console.log(i, gameList.length);
+
+            if (i + 1 === gameList.length) {
+              gameMsgArr.push(`\`\`\``);
+            }
           })
+          gameMsg = gameMsgArr.join(' ');
+        }).catch((error)=>{
+          console.log(error.data.message)
+        })
         // No results game message
-        gameMsg = `No results. Are you sure ${game} is the proper spelling?\nThere's also a chance that ${platform} is incorrect.`;
+        // gameMsg = `No results. Are you sure ${game} is the proper spelling?\nThere's also a chance that ${platform} is incorrect.`;
       } else {
         // There are results
         // Transform gameMsg into embed message
@@ -83,7 +101,7 @@ module.exports = {
         .setFooter('Chicken-Coop API')
       }
     }).catch((error)=>{
-      console.log(error.response);
+      console.log(error.response.data.message);
       return message.reply('There was an error. I\'ll let my master know. :service_dog:');
     })
     message.channel.send(gameMsg);
