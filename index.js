@@ -4,10 +4,11 @@ const { prefix, token } = require('./config.json');
 // Require Discord and Client
 const fs = require('fs');
 const Discord = require('discord.js');
+const moment = require('moment');
 
 const client = new Discord.Client();
-client.commands = new Discord.Collection();
 const cooldowns = new Discord.Collection();
+client.commands = new Discord.Collection();
 
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
@@ -28,12 +29,40 @@ client.once('ready', () => {
 // Create an event listener for new guild members
 client.on('guildMemberAdd', member => {
   // Send the message to a designated channel on a server:
-  const channel = member.guild.channels.cache.find(ch => ch.name === 'member-log');
+  const greetChannel = member.guild.channels.cache.find(ch => ch.name === 'welcome-mat');
+  const adminChannel = member.guild.channels.cache.find(ch => ch.name === 'bot-logs');
+
   // Do nothing if the channel wasn't found on this server
-  if (!channel) return;
+  if (!greetChannel) return;
+
   // Send the message, mentioning the member
-  channel.send(`Welcome to the server, ${member}`);
+  greetChannel.send(`Welcome to the server, ${member}`);
+
+  // Send log to admin channel
+  if (adminChannel) {
+    adminChannel.send(`${member}, joined the server. ${moment().format('MMM Do YYYY [@] h:mm a')}`);
+  }
 });
+
+// Create an event listener for when a guild member is updated
+client.on('guildMemberUpdate', (oldMember, newMember) => {
+  // Get channel to send log
+  const adminChannel = oldMember.guild.channels.cache.find(ch => ch.name === 'bot-logs');
+  let returnMsg;
+
+  // If the role(s) are present on the old member object but no longer on the new one (i.e role(s) were removed)
+  const removedRoles = oldMember.roles.cache.filter(role => !newMember.roles.cache.has(role.id));
+
+  if (removedRoles.size > 0) returnMsg = (`The role <@&${removedRoles.map(r => r.id)}> was removed from <@${oldMember.id}>.\n`);
+
+  // If the role(s) are present on the new member object but are not on the old one (i.e role(s) were added)
+  const addedRoles = newMember.roles.cache.filter(role => !oldMember.roles.cache.has(role.id));
+  if (addedRoles.size > 0) returnMsg = (`The role <@&${addedRoles.map(r => r.id)}> was added to <@${oldMember.id}>.\n`)
+
+  // Send log
+  adminChannel.send(`${returnMsg}${moment().format('MMM Do YYYY [@] h:mm a')}`);
+});
+
 
 client.on('message', message => {
   if (!message.content.startsWith(prefix) || message.author.bot) return;

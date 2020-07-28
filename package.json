@@ -11,6 +11,7 @@
   "dependencies": {
     "axios": "^0.19.2",
     "discord.js": "^12.2.0",
-    "eslint": "^7.4.0"
+    "eslint": "^7.4.0",
+    "moment": "^2.27.0"
   }
 }
