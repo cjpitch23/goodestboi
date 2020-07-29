@@ -3,7 +3,8 @@ module.exports = {
   alias: 'd&d',
   short: 'DnD Helper',
   description: 'Has built in commands to create a new manageable campaign in the server complete with categories, channels and roles.',
-  usage: '[action: (create, add)] [arguments: (dm, playerlist)]',
+  usage: '[action: (create, add)] [mentions: (dm, playerlist)]',
+  args: true,
   cooldown: 5, //  command cooldown in seconds
   async execute(message, args) {
     // Global Variables
@@ -23,7 +24,7 @@ module.exports = {
 
       // Role to Give to User
       const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === campaign.toLowerCase() );
-    
+
       // Loop over mentions
       message.mentions.members.each((m) => {
         // Give roles to mentioned members
@@ -34,9 +35,10 @@ module.exports = {
           message.channel.send('There was an error adding players to campaign.');
         });
       })
-      
-      // 
+
+      // Create Command
     } else if (newCommand === 'create') {
+
       /**
        * Create Campaign Category and Roles
        * @params campaign
@@ -60,6 +62,18 @@ module.exports = {
         // Campaign is Next Argument (join w/ hyphens)
         const campaign = args.filter(c => c.substring(0, 1) !== '<').join('-');
 
+        // Check for Campaign Name
+        if (!campaign) {
+          message.reply('please name the campaign and assign a DM with a mention');
+          return;
+        }
+
+        // Check for a mention
+        if (!message.mentions.members.first()) {
+          message.reply('a DM is required to create a campaign!').catch(console.error);
+          return;
+        }
+
         // Create role for campaign dm
         if (!(guild.roles.cache.find(role => role.name.toLowerCase() === `${campaign.toLowerCase()}-dm`))) {
           await guild.roles.create({
@@ -79,7 +93,7 @@ module.exports = {
               returnMsg.push('Unable to add dm to the campaign');
             });
 
-            // Create new role for players in campaign 
+            // Create new role for players in campaign
             if (!(guild.roles.cache.find(role => role.name.toLowerCase() === campaign.toLowerCase()))) {
               await guild.roles.create({
                 data: {
@@ -91,7 +105,19 @@ module.exports = {
               .then(async (role) => {
                 returnMsg.push('`+ New Role Created...`');
 
-                // Create Category
+                const dmPermissions = {
+                  id: dmrole.id,
+                  type: 'role',
+                  allow: allowFlags
+                };
+
+                const playerPermissions = {
+                  id: role.id,
+                  type: 'role',
+                  allow: allowFlags
+                };
+
+                // Create Category :: START
                 if (
                   !(guild.channels.cache.find((c) => {
                     c.name.toLowerCase() === campaign && c.type === 'category'}
@@ -102,16 +128,10 @@ module.exports = {
                     {
                       type: 'category',
                       reason: 'Started a new campaign',
-                      permissionOverwrites: [
-                        {
-                          id: dmrole.id,
-                          type: 'role',
-                          allow: allowFlags
-                        }
-                      ]
+                      permissionOverwrites: [ dmPermissions ]
                     }).then( async (cat) => {
                       returnMsg.push('`+ New Category Created...`');
-      
+
                       // Create General Chat Channel
                       await guild.channels.create(
                         'general-chat',
@@ -119,20 +139,14 @@ module.exports = {
                           type: 'text',
                           parent: cat.id,
                           reason: 'For discussing the campaign',
-                          permissionOverwrites: [
-                            {
-                              id: role.id,
-                              type: 'role',
-                              allow: allowFlags
-                            }
-                          ]
+                          permissionOverwrites: [ dmPermissions, playerPermissions ]
                         }).then(() => {
                           returnMsg.push('`+ General Chat channel created..`.')
                         })
                         .catch(() => {
                           returnMsg.push('- I\'m sorry. There was an error creating the General Chat channel.');
                         })
-      
+
                       // Create Notes Channel
                       await guild.channels.create(
                         'campaign-notes',
@@ -140,24 +154,47 @@ module.exports = {
                           type: 'text',
                           parent: cat.id,
                           reason: 'To help keep notes tidy and in one place',
-                          permissionOverwrites: [
-                            {
-                              id: role.id,
-                              type: 'role',
-                              allow: allowFlags
-                            }
-                          ]
+                          permissionOverwrites: [ dmPermissions, playerPermissions ]
                         }).then(() => {
                           returnMsg.push('`+ Campaign Notes channel created...`');
                         })
                         .catch(() => {
                           returnMsg.push('`- I\'m sorry. There was an error creating the Campaign Notes channel.`');
                         })
-      
+
+                      // Create Encounters Chat Channel
+                      await guild.channels.create(
+                        'encounters',
+                        {
+                          type: 'text',
+                          parent: cat.id,
+                          reason: 'To contain all the details regarding each encounter',
+                          permissionOverwrites: [ dmPermissions, playerPermissions ]
+                        }).then(() => {
+                          returnMsg.push('`+ Encounters channel created..`.')
+                        })
+                        .catch(() => {
+                          returnMsg.push('- I\'m sorry. There was an error creating the Encounters Chat channel.');
+                        })
+
+                      // Create DM Screen Chat Channel
+                      await guild.channels.create(
+                        'dm-screen',
+                        {
+                          type: 'text',
+                          parent: cat.id,
+                          reason: 'A channel for the DM hidden from the players',
+                        }).then(() => {
+                          returnMsg.push('`+ DM Screen created..`.')
+                        })
+                        .catch(() => {
+                          returnMsg.push('- I\'m sorry. There was an error creating the DM Screen.');
+                        })
+
                     }).catch(() => {
                       returnMsg.push('`- I\'m sorry. There was an error creating the campaign category.`');
                     });
-                }
+                } // Create Category :: END
               }).catch(() => {
                 returnMsg.push('`- I\'m sorry. There was an error creating the campaign role.`');
               });
