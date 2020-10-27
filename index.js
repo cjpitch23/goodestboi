@@ -26,7 +26,12 @@ client.once('ready', () => {
   console.log('Ready!');
 });
 
-// Create an event listener for new guild members
+/**
+  * GUILD MEMBER ADD
+  * =====================================================
+  *
+  *  @desc Create an event listener for new guild members
+ */
 client.on('guildMemberAdd', member => {
   // Send the message to a designated channel on a server:
   const greetChannel = member.guild.channels.cache.find(ch => ch.name === 'welcome-mat');
@@ -44,26 +49,37 @@ client.on('guildMemberAdd', member => {
   }
 });
 
-// Create an event listener for when a guild member is updated
-client.on('guildMemberUpdate', (oldMember, newMember) => {
-  // Get channel to send log
-  const adminChannel = oldMember.guild.channels.cache.find(ch => ch.name === 'bot-logs');
-  let returnMsg;
+/**
+  * GUILD MEMBER UPDATE
+  * =====================================================
+  *
+  *  @desc Create an event listener for when a guild member is updated
+  *  ! Commented Out because it was sending excessive amounts of messages
+ */
+// client.on('guildMemberUpdate', (oldMember, newMember) => {
+//   // Get channel to send log
+//   const adminChannel = oldMember.guild.channels.cache.find(ch => ch.name === 'bot-logs');
+//   let returnMsg = `Guild Member Updated ${oldMember.displayName}`;
 
-  // If the role(s) are present on the old member object but no longer on the new one (i.e role(s) were removed)
-  const removedRoles = oldMember.roles.cache.filter(role => !newMember.roles.cache.has(role.id));
+//   // If the role(s) are present on the old member object but no longer on the new one (i.e role(s) were removed)
+//   const removedRoles = oldMember.roles.cache.filter(role => !newMember.roles.cache.has(role.id));
 
-  if (removedRoles.size > 0) returnMsg = (`The role <@&${removedRoles.map(r => r.id)}> was removed from <@${oldMember.id}>.\n`);
+//   if (removedRoles.size > 0) returnMsg = (`The role <@&${removedRoles.map(r => r.id)}> was removed from <@${oldMember.id}>.`);
 
-  // If the role(s) are present on the new member object but are not on the old one (i.e role(s) were added)
-  const addedRoles = newMember.roles.cache.filter(role => !oldMember.roles.cache.has(role.id));
-  if (addedRoles.size > 0) returnMsg = (`The role <@&${addedRoles.map(r => r.id)}> was added to <@${oldMember.id}>.\n`)
+//   // If the role(s) are present on the new member object but are not on the old one (i.e role(s) were added)
+//   const addedRoles = newMember.roles.cache.filter(role => !oldMember.roles.cache.has(role.id));
+//   if (addedRoles.size > 0) returnMsg = (`The role <@&${addedRoles.map(r => r.id)}> was added to <@${oldMember.id}>.`);
 
-  // Send log
-  adminChannel.send(`${returnMsg}${moment().format('MMM Do YYYY [@] h:mm a')}`);
-});
+//   // Send log
+//   adminChannel.send(`${returnMsg}\n${moment().format('MMM Do YYYY [@] h:mm a')}`);
+// });
 
-
+/**
+  * BOT COMMAND
+  * =====================================================
+  *
+  *  @desc Executed whenever a user calls an action from the bot
+ */
 client.on('message', message => {
   if (!message.content.startsWith(prefix) || message.author.bot) return;
 
